@@ -1,0 +1,12 @@
+homeassistant:
+  url: http://homeassistant.local:8123
+  token: YOUR_LONG_LIVED_ACCESS_TOKEN
+
+cosmicwatch:
+  port: COM4                      # null = auto-detect CH340
+  baud: 9600
+  ha_push_interval_seconds: 10    # push to HA every N seconds
+
+logging:
+  level: INFO
+  file: cosmicwatch_ha.log

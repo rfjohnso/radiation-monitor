@@ -1,0 +1,11 @@
+homeassistant:
+  url: http://homeassistant.local:8123
+  token: YOUR_LONG_LIVED_ACCESS_TOKEN
+
+radiacode:
+  serial_number: null           # null = first available USB device
+  ha_push_interval_seconds: 5   # push to HA every N seconds
+
+logging:
+  level: INFO
+  file: radiacode_ha.log        # null = console only
