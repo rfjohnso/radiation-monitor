@@ -1,0 +1,5 @@
+radiacode>=0.3.5
+libusb-package>=1.0.26
+requests>=2.31
+pyyaml>=6.0
+flask>=3.0

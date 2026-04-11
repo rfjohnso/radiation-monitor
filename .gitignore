@@ -1,0 +1,30 @@
+# Databases (runtime data)
+*.db
+
+# Logs
+*.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Config files with secrets (tokens)
+config.yaml
+cosmicwatch/config.yaml
+
+# Tools
+zadig-2.9.exe
+
+# Claude
+.claude/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store
