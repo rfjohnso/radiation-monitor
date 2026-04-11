@@ -14,6 +14,7 @@ import signal
 import sqlite3
 import sys
 import time
+from collections import deque
 from datetime import datetime, timezone
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
@@ -198,8 +199,9 @@ def main():
 
             db_conn = sqlite3.connect(str(DB_PATH))
             last_ha_push = 0
-            events_in_window = 0
-            window_start = time.monotonic()
+            # Sliding window: store timestamps of recent events for CPM calculation
+            cpm_window_seconds = 60  # Calculate CPM from last 60 seconds
+            event_times = deque()  # deque of monotonic timestamps
 
             try:
                 while not shutdown_requested:
@@ -209,8 +211,11 @@ def main():
                         # Timeout - no event. Still push stats periodically
                         now = time.monotonic()
                         if (now - last_ha_push) >= ha_push_interval:
-                            window_secs = now - window_start
-                            cpm = (events_in_window / window_secs * 60) if window_secs > 0 else 0
+                            # Prune old events from sliding window
+                            cutoff = now - cpm_window_seconds
+                            while event_times and event_times[0] < cutoff:
+                                event_times.popleft()
+                            cpm = len(event_times) * (60.0 / cpm_window_seconds)
 
                             push_sensor(http_session, ha_url, ha_token, "cosmicwatch_cpm", round(cpm, 2), {
                                 "unit_of_measurement": "CPM",
@@ -237,7 +242,8 @@ def main():
                         continue
 
                     cumulative_total += 1
-                    events_in_window += 1
+                    now = time.monotonic()
+                    event_times.append(now)
 
                     # Store event to SQLite
                     ts = datetime.now(timezone.utc).isoformat()
@@ -249,10 +255,12 @@ def main():
                     db_conn.commit()
 
                     # Push to HA periodically
-                    now = time.monotonic()
                     if (now - last_ha_push) >= ha_push_interval:
-                        window_secs = now - window_start
-                        cpm = (events_in_window / window_secs * 60) if window_secs > 0 else 0
+                        # Prune old events from sliding window
+                        cutoff = now - cpm_window_seconds
+                        while event_times and event_times[0] < cutoff:
+                            event_times.popleft()
+                        cpm = len(event_times) * (60.0 / cpm_window_seconds)
 
                         push_sensor(http_session, ha_url, ha_token, "cosmicwatch_cpm", round(cpm, 2), {
                             "unit_of_measurement": "CPM",
@@ -282,14 +290,14 @@ def main():
                         # Store CPM stat
                         db_conn.execute(
                             "INSERT INTO muon_stats (timestamp, cpm, total_count, window_count) VALUES (?, ?, ?, ?)",
-                            (ts, round(cpm, 2), cumulative_total, events_in_window),
+                            (ts, round(cpm, 2), cumulative_total, len(event_times)),
                         )
                         db_conn.commit()
 
                         log.info(
-                            "muon #%d  CPM=%.1f  ADC=%d  SiPM=%.1f mV  [%d events in %.0fs]",
+                            "muon #%d  CPM=%.1f  ADC=%d  SiPM=%.1f mV  [%d in last %ds]",
                             cumulative_total, cpm, event["adc"], event["sipm_mv"],
-                            events_in_window, window_secs,
+                            len(event_times), cpm_window_seconds,
                         )
                         last_ha_push = now
 
