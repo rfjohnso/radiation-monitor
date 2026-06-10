@@ -1,8 +1,9 @@
 # Databases (runtime data)
 *.db
 
-# Logs
+# Logs (including rotated *.log.1, *.log.2, ...)
 *.log
+*.log.*
 
 # Python
 __pycache__/
