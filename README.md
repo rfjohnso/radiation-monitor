@@ -1,6 +1,6 @@
 # Radiation & Particle Monitoring Station
 
-A Windows-based monitoring station that collects data from a **Radiacode 103** radiation detector and a **CosmicWatch Desktop Muon Detector v2**, pushes real-time sensor data to **Home Assistant**, and stores all readings in local **SQLite** databases with a **Flask** web dashboard.
+A Windows-based monitoring station that collects data from a **Radiacode 103** radiation detector and a **CosmicWatch Desktop Muon Detector v2**, pushes real-time sensor data to **Home Assistant**, and stores all readings in local **SQLite** databases with a **Flask** web dashboard. This will need to be adapted for it to work on your machine. This is bespoke to its current env
 
 ## Architecture
 
